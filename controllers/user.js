@@ -27,14 +27,14 @@ async function handleUserLogin(req, res) {
     if (!user) {
       return res.status(401).send("Invalid email or password.");
     }
-    const sessionId = uuidv4();
-    setUser(sessionId, user);
-    res.cookie("uid", sessionId);
     
+    const token = setUser({ _id: user._id, email: user.email }); // ✅ This returns a JWT
+    res.cookie("jwt", token); // ✅ Cookie will now contain valid JWT
 
     // Login success
     return res.redirect("/");
-  } catch (err) {
+  } 
+  catch (err) {
     console.error("Login Error:", err);
     return res.status(500).send("Login failed.");
   }

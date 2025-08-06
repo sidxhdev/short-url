@@ -1,17 +1,28 @@
-const { getUser} = require("../service/auth");
+const { getUser } = require("../service/auth");
 
-async function restrictToLoggedinUserOnly(req, res, next){
-    const userUid = req.cookies?.uid;
+// Middleware to restrict access to only logged-in users
+function restrictToLoggedinUserOnly(req, res, next) {
+  const token = req.cookies?.jwt;
+  if (!token) return res.redirect("/login");
 
-if(!userUid) return res.redirect("/login");
- const user = getUser(userUid)
+  const user = getUser(token);
+  if (!user) return res.redirect("/login");
 
-  if(!user) return res.redirect("/login");
+  req.user = user;
+  next();
+}
+
+// Middleware to optionally attach user if logged in (e.g. for UI)
+function checkAuth(req, res, next) {
+  const token = req.cookies?.jwt;
   
-  req.user =user;
+  const user = getUser(token);
+  req.user = user; // Will be `null` if invalid
+
   next();
 }
 
 module.exports = {
-    restrictToLoggedinUserOnly,
-}
+  restrictToLoggedinUserOnly,
+  checkAuth,
+};
